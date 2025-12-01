@@ -1,4 +1,4 @@
-import express, { Request, Response } from "express"
+import express, { NextFunction, Request, Response } from "express"
 import {Pool} from "pg"
 import dotenv from "dotenv"
 import path from "path"
@@ -44,11 +44,18 @@ const initBD=async()=>{
 }
 
 initBD();
+
+// logger middleware
+const logger = (req: Request, res: Response, next: NextFunction) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}\n`);
+  next();
+};
+
 //parser middleware
 app.use(express.json())//to get body data after parsing
 
 //users CRUD here table value is set
-app.post("/users",async(req:Request, res:Response)=>{
+app.post("/users",logger,async(req:Request, res:Response)=>{
     const {name,email}=req.body;
 
     try {
@@ -184,9 +191,13 @@ app.get("/",(req: Request,res: Response)=>{
     res.send("hello Etu")                          
 })
 
-
-
-
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: "Route not found",
+    path: req.path,
+  });
+});
 
 app.listen(port, ()=>{
    console.log(`example app listen on port ${port}`)                           
