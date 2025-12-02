@@ -1,106 +1,68 @@
 import express, { NextFunction, Request, Response } from "express"
-import {Pool} from "pg"
-import dotenv from "dotenv"
-import path from "path"
 
-dotenv.config({path:path.join(process.cwd(), '.env')})
+import config from "./config";
+import initBD, { pool } from "./config/db";
+import logger from "./middleware/logger";
+import { userRouter } from "./modules/user/user.routes";
 
 const app=express();// express k call korlei application baniye dey o ...req.on end
-const port=5000;
+const port=config.port;
 
-
-//DB
-const pool = new Pool({//creating cloud connection
-  connectionString: `${process.env.CONNECTION_STR}`,
-});
-
-const initBD=async()=>{
-    //sql query
-    await pool.query(`
-        CREATE TABLE IF NOT EXISTS users(
-        id SERIAL PRIMARY KEY,
-        name VARCHAR(100) NOT NULL,
-        email VARCHAR(150) UNIQUE NOT NULL,
-        age INT,
-        phone VARCHAR(15),
-        address TEXT,
-        created_at TIMESTAMP DEFAULT NOW(),
-        updated_at TIMESTAMP DEFAULT NOW()
-        )
-        `);
-
-        await pool.query(`
-            CREATE TABLE IF NOT EXISTS todos(
-            id SERIAL PRIMARY KEY,
-            user_id INT REFERENCES users(id) ON DELETE CASCADE,
-            title VARCHAR(200) NOT NULL,
-            description TEXT,
-            completed BOOLEAN DEFAULT false,
-            due_date DATE,
-            created_at TIMESTAMP DEFAULT NOW(),
-            updated_at TIMESTAMP DEFAULT NOW()
-            )
-            `);
-}
 
 initBD();
 
-// logger middleware
-const logger = (req: Request, res: Response, next: NextFunction) => {
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}\n`);
-  next();
-};
+
 
 //parser middleware
 app.use(express.json())//to get body data after parsing
 
 //users CRUD here table value is set
-app.post("/users",logger,async(req:Request, res:Response)=>{
-    const {name,email}=req.body;
+app.use('/users',userRouter)//same /users for both get and post so app.user 1 tai
 
-    try {
-    const result = await pool.query(
-      `INSERT INTO users(name, email) VALUES($1, $2) RETURNING *`,
-      [name, email]
-    );
-    // console.log(result.rows[0]);
-    res.status(201).json({
-      success: false,
-      message: "Data Inserted Successfully",
-      data: result.rows[0],
-    });
-  }
-    catch(err:any){
-       res.status(500).json({
-      success: false,
-      message: err.message,
-    });
-    }
- 
-    // res.status(201).json({// same as res.send
-    //    success:true,
-    //    message:"api is working"                       
-    //})
-})
+
+//we took all the code in user.controller and import it in router and used the router here
+//app.post("/users",logger,userRouter
+// async(req:Request, res:Response)=>{
+//     const {name,email}=req.body;
+//     try {
+//     const result = await pool.query(
+//       `INSERT INTO users(name, email) VALUES($1, $2) RETURNING *`,
+//       [name, email]
+//     );
+     // console.log(result.rows[0]);
+//     res.status(201).json({
+//       success: false,
+//       message: "Data Inserted Successfully",
+//       data: result.rows[0],
+//     });
+//   }
+//     catch(err:any){
+//        res.status(500).json({
+//       success: false,
+//       message: err.message,
+//     });
+//     }
+
+// })
 
 // get all users Crud
-app.get("/users", async (req: Request, res: Response) => {
-  try {
-    const result = await pool.query(`SELECT * FROM users`);
+// app.get("/users", async (req: Request, res: Response) => {
+//   try {
+//     const result = await pool.query(`SELECT * FROM users`);
 
-    res.status(200).json({
-      success: true,
-      message: "Users retrieved successfully",
-      data: result.rows,
-    });
-  } catch (err: any) {
-    res.status(500).json({
-      success: false,
-      message: err.message,
-      datails: err,
-    });
-  }
-});
+//     res.status(200).json({
+//       success: true,
+//       message: "Users retrieved successfully",
+//       data: result.rows,
+//     });
+//   } catch (err: any) {
+//     res.status(500).json({
+//       success: false,
+//       message: err.message,
+//       datails: err,
+//     });
+//   }
+// });
 
 app.get("/users/:id", async (req: Request, res: Response) => {
   // console.log(req.params.id);
