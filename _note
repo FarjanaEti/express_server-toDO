@@ -14,3 +14,5 @@ npm i --save--dev @types/pg Craete pool
 
 *****************************
 in "config" folder there will be index.ts contain all config related data and in db.ts will contain database
+
+npm i bcryptjs
