@@ -4,6 +4,8 @@ import config from "./config";
 import initBD, { pool } from "./config/db";
 import logger from "./middleware/logger";
 import { userRouter } from "./modules/user/user.routes";
+import { todoRoutes } from "./modules/todo/todo.router";
+import { authRouter } from "./modules/auth/auth.route";
 
 const app=express();// express k call korlei application baniye dey o ...req.on end
 const port=config.port;
@@ -15,10 +17,6 @@ initBD();
 
 //parser middleware
 app.use(express.json())//to get body data after parsing
-
-//users CRUD here table value is set
-app.use('/users',userRouter)//same /users for both get and post so app.user 1 tai
-
 
 //we took all the code in user.controller and import it in router and used the router here
 //app.post("/users",logger,userRouter
@@ -149,9 +147,18 @@ app.use('/users',userRouter)//same /users for both get and post so app.user 1 ta
 //   }
 // });
 
-app.get("/",(req: Request,res: Response)=>{
+app.get("/",logger,(req: Request,res: Response)=>{
     res.send("hello Etu")                          
 })
+
+
+//users CRUD here table value is set
+app.use('/users',userRouter)//same /users for both get and post so app.user 1 tai
+
+app.use("/todos",todoRoutes)
+
+app.use("/auth",authRouter)
+
 
 app.use((req, res) => {
   res.status(404).json({
