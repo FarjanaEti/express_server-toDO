@@ -4,6 +4,7 @@ npm i -D typescript
 npx tsc --init
 npm i --save--dev @types/express
 npm i -D tsx
+npm i dotenv
 
 "dev":"npx tsx watch ./src/server.ts" write this inside package in Script
 then finally npm run dev

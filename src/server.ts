@@ -3,6 +3,7 @@ import express, { NextFunction, Request, Response } from "express"
 import config from "./config";
 import initBD, { pool } from "./config/db";
 import logger from "./middleware/logger";
+
 import { userRouter } from "./modules/user/user.routes";
 import { todoRoutes } from "./modules/todo/todo.router";
 import { authRouter } from "./modules/auth/auth.route";
